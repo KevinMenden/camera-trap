@@ -20,6 +20,7 @@ root_dir = "E:\\wellington_pics\\wct_images\\images\\"
 label_file = Path("E:/wellington_pics/wellington_camera_traps.json")
 model_dir = Path("E:/wellington_pics/model_dir")
 model_save_path = model_dir / "mobilenetv2_keras"
+lite_model_path = model_dir / "mobilenetv2_tflite"
 IMG_SHAPE = (244, 244, 3)
 IMG_SIZE = (244, 244)
 lr = 0.00001
@@ -84,18 +85,33 @@ model = tf.keras.Sequential([
     prediction_layer
 ])
 
-# Compile the model
-lr = 1e-8
-model.compile(optimizer=tf.keras.optimizers.Adam(lr=lr), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"])
+
 
 load_pretrained = True
 if load_pretrained:
     model = tf.keras.models.load_model(str(model_save_path))
 
+# Compile the model
+lr = 1e-8
+model.compile(optimizer=tf.keras.optimizers.Adam(lr=lr), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"])
+
 # Perform the training
 steps_per_epoch = 240000 / batch_size
-model.fit(x=dataset, epochs=20, steps_per_epoch=steps_per_epoch)
+model.fit(x=dataset, epochs=10, steps_per_epoch=steps_per_epoch)
 
 # Save the trained model
 
 model.save(str(model_save_path)) 
+
+# Convert model to tensorflow-lite
+
+converter = tf.lite.TFLiteConverter.from_saved_model(str(model_save_path))
+tflite_model = converter.convert()
+
+# Save the TF Lite model.
+with tf.io.gfile.GFile(str(lite_model_path), 'wb') as f:
+  f.write(tflite_model)
+# Also save in this github repo
+with tf.io.gfile.GFile("mobilenetv2_tflite", 'wb') as f:
+    f.write(tflite_model)
+

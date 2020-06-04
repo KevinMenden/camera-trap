@@ -87,6 +87,8 @@ print(correct)
 print(incorrect)
 
 ## Test on unseen pictures from the internet
-pic_path = Path("E:/wellington_pics/cat_test_pics/cat1.jpg")
+pic_path = Path("E:/wellington_pics/cat_test_pics/cat2.jpg")
 image = Image.open(pic_path)
 image = transform(image)
+res = perform_prediction(model, image)
+print(res)

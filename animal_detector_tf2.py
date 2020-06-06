@@ -22,7 +22,7 @@ def load_image(root_dir, id):
 
 # Load the model
 model_dir = Path("E:/wellington_pics/model_dir")
-model_save_path = model_dir / "mobilenetv2_keras"
+model_save_path = model_dir / "resnet50_keras"
 model = tf.keras.models.load_model(str(model_save_path))
 
 # Format picture data
@@ -35,6 +35,10 @@ categories = pd.DataFrame(labels['categories'])
 annotation = pd.DataFrame.from_dict(labels['annotations'])
 
 
+config = tf.config
+config.gpu_options.allow_growth = True
+
+tf.config.C
 # Load and classify image
 idx = 4
 tmp = annotation.loc[idx,]
@@ -49,12 +53,15 @@ correct = 0
 incorrect = 0
 preds = []
 cats = []
-for i in range(1000, 2000):
+for i in range(5000):
     tmp = annotation.loc[i,]
     cat = tmp.category_id
+    if not cat == 1:
+        continue
     id = tmp.image_id
     image = load_image(root_dir, id)
     image = tf.keras.backend.expand_dims(image, 0)
+    image = np.array(image)
     res = np.argmax(model(image))
     cats.append(cat)
     preds.append(res)
@@ -65,8 +72,7 @@ for i in range(1000, 2000):
 
 print(correct)
 print(incorrect)
-
-print(correct / 1000)
+print(correct / (correct + incorrect))
 
 
 
